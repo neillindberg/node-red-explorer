@@ -1,0 +1,20 @@
+{
+  "name": "red-to-nodejs-express",
+  "version": "0.0.1",
+  "description": "Take the output JSON from NodeRED export and convert it to NodeJS (sans RED) using Express for routing.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No testing setup just yet, y'all.\"",
+    "start": "node index.js"
+  },
+  "author": "Neil G. Lindberg",
+  "license": "ISC",
+  "private": true,
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "eslint": "^6.3.0",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15"
+  }
+}

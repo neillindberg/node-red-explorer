@@ -1,0 +1,83 @@
+[
+    {
+        "id": "16820696.ed6469",
+        "type": "switch",
+        "z": "8c1ef78e.3b4798",
+        "name": "/dashdb",
+        "property": "api.req_paths[2]",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "case_audit",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "cases",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "phase_events",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "case_facts",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "users",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "facilities",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "machines",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "locations",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 8,
+        "x": 580,
+        "y": 240,
+        "wires": [
+            [
+                "a51d7394.95aa3"
+            ],
+            [
+                "9337e8b1.ea6eb8"
+            ],
+            [
+                "1801d191.d2d90e"
+            ],
+            [
+                "3d68c754.570218"
+            ],
+            [
+                "296dbddb.a4a782"
+            ],
+            [
+                "e8f34b1.5ddabb8"
+            ],
+            [
+                "bf91760d.37baa8"
+            ],
+            [
+                "e4e28097.017c"
+            ]
+        ]
+    }
+]

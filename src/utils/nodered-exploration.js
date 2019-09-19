@@ -8,7 +8,53 @@ const flat = require('flat');
 const jsonpath = require('jsonpath');
 
 const flowKey = /flow\.[\d]+/;
-const unwantedProperties = ['x', 'y', 'z'];
+const unwantedProperties = ['x', 'y'];
+const uniqueNodeTypes = [
+  'catch',
+  'change',
+  'comment',
+  'debug',
+  'delay',
+  'e-mail',
+  'function',
+  'gzip',
+  'http in',
+  'http request',
+  'http response',
+  'inject',
+  'json',
+  'link in',
+  'link out',
+  'subflow',
+  'switch',
+  'tab',
+  'xml'
+];
+
+const jpathNegativeQuery = uniqueNodeTypes.map(nodeType => {
+  return `@.type != '${nodeType}'`;
+});
+
+const subflowInstanceQuery = `$..[?(${jpathNegativeQuery.join(' && ')})]`;
+
+const getJSONPathQuery = (nodeType, properties = []) => {
+  return `$.${nodeType ? `flow[?(@.type == '${nodeType}')]` : 'flow.*'}${properties.length > 0 ? `[${properties.map(p => `'${p}'`)}]` : ''}`;
+}
+// Product of refactoring.
+const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
+  const query = getJSONPathQuery(nodeType, properties);
+  console.log('Running jsonpath query: ', query);
+  const queryResult = jsonpath.query(inJSON, query);
+  
+  if (properties.length > 0 && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
+  const complete = [];
+  for (let i = 0; i < queryResult.length; i += properties.length) {
+    const values = queryResult.slice(i, i + properties.length);
+    complete.push(_.zipObject(properties, values));
+  }
+
+  return complete;
+};
 
 module.exports = {
   getJSONfromNodeRED: (fileName) => {
@@ -59,15 +105,14 @@ module.exports = {
     });
 
     return uniqueKeyList.sort();
-
   },
   // 
   getNodeTypeList: (inJSON) => {
     // Returns a unique list of NodeRED types. Use for discussion...
     // [ 'catch','change','comment','debug','delay','e-mail','function','gzip','http in','http request',
     // 'http response','inject','json','link in','link out','subflow','switch','tab','xml' ]
-    const path = '$..type';
-    const queryResult = jsonpath.query(inJSON, path);
+    const query = '$..type';
+    const queryResult = jsonpath.query(inJSON, query);
     const uniqueTypes = _.uniq(queryResult.map(x => x.split(/:/)[0])).sort();
 
     return uniqueTypes;
@@ -76,116 +121,83 @@ module.exports = {
   getIdMap: (inJSON) => {
     // TODO: Make me worketh
     // z prop points to module node lives in.
+    // $.flow.*.['z', 'id','type']
+    const queryResult = jsonpath.query(inJSON, getJSONPathQuery(null, ['z']));
+    const idMap = {};
+
+    console.log('Found z/n of: ', queryResult.length);
+    // queryResult.forEach(z => {
+    //   console.log("I AM NODE: z", JSON.stringify(z));
+    //   idMap[z]
+    // });
+
+    return;
+    // const properties = ['z', 'id', 'type', 'name', 'label'];
+
+    // return getNodeTypeProps(inJSON, null, properties);
   },
+  getByNodeType: (inJSON, type) => {
+    const query = `$..[?(@.type == '${type}')]`;
+    const queryResult = jsonpath.query(inJSON, query);
+
+    return queryResult;
+  },
+  // TODO: Add list with pointers to next flow. ? is that on wires[n].id ?
+  getWireMap: () => { },
   getTabMapping: (inJSON) => {
     // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'label'];
-    const path = `$..[?(@.type == 'tab')][${properties.map(p => `'${p}'`)}]`;
-    const queryResult = jsonpath.query(inJSON, path);
 
-    console.log(queryResult.length / properties.length, ' subflow nodes found.');
-    const functionsComplete = [];
-    for (let i = 0; i < queryResult.length; i += properties.length) {
-      const values = queryResult.slice(i, i + properties.length);
-      functionsComplete.push(_.zipObject(properties, values));
-    }
-    return functionsComplete;
+    return getNodeTypeProps(inJSON, 'tab', properties);
   },
   getSubflowMapping: (inJSON) => {
     // NOTE: These are the sidebar Subflows - See Instantiated Subflows to view in-use subflows.
     // $..[?(@.type == 'subflow')]['id', 'name', 'in', 'out']  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'in', 'out'];
-    const path = `$..[?(@.type == 'subflow')][${properties.map(p => `'${p}'`)}]`;
-    const queryResult = jsonpath.query(inJSON, path);
 
-    console.log(queryResult.length / properties.length, ' subflow nodes found.');
-    const functionsComplete = [];
-    for (let i = 0; i < queryResult.length; i += properties.length) {
-      const values = queryResult.slice(i, i + properties.length);
-      functionsComplete.push(_.zipObject(properties, values));
-    }
-    return functionsComplete;
-  },
-  getInstantiatedSubflowMapping: (inJSON) => {
-    // $..[?(@.type =~ /subflow:.*/)]['id','name','wires','z']
-    const properties = ['id','name','wires','z'];
-    const path = `$..[?(@.type =~ /subflow:.*/)][${properties.map(p => `'${p}'`)}]`;
-    const queryResult = jsonpath.query(inJSON, path);
-
-    console.log(queryResult.length / properties.length, ' instantiated subflow nodes found.');
-    const functionsComplete = [];
-    for (let i = 0; i < queryResult.length; i += properties.length) {
-      console.log(queryResult.slice(i, i + properties.length));
-      const values = queryResult.slice(i, i + properties.length);
-      functionsComplete.push(_.zipObject(properties, values));
-    }
-    return functionsComplete;
+    return getNodeTypeProps(inJSON, 'subflow', properties);
   },
   getFunctionMapping: (inJSON) => {
     // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'func', 'wires'];
-    const path = `$..[?(@.type == 'function')][${properties.map(p => `'${p}'`)}]`;
-    const queryResult = jsonpath.query(inJSON, path);
 
-    console.log(queryResult.length / properties.length, ' function nodes found.');
-    const functionsComplete = [];
-    for (let i = 0; i < queryResult.length; i += properties.length) {
-      const values = queryResult.slice(i, i + properties.length);
-      functionsComplete.push(_.zipObject(properties, values));
-    }
-    return functionsComplete;
+    return getNodeTypeProps(inJSON, 'function', properties);
   },
-  // Return a list of all of a attribute/value pairs by JSON path.
-  getAttributeByPath: (inJSON, path = '$.flow.*[\'type\']') => {
-    //     const path = '$.flow[?(@.type != \'tab\')][\'type\']';
-  },
-  // TODO: Add list with pointers to next flow. ? is that on wires[n].id ?
-  getWireMap: () => {
-    // TODO: We need an ID map to do this_ operaiton. LOL ^ I said that yesterday.
-    /*
-    ////
-    For example: $..['wires'].*.[?(@.id == '4b326353.484a3c')]
-    Returns:
-    [
-      {
-          "id" : "4b326353.484a3c"
-      },
-      {
-          "id" : "4b326353.484a3c",
-          "port" : 0
-      }
-    ]
-    ////
-    Which, in turn, points to: $..[?(@.id == '4b326353.484a3c')]
-    [
-      {
-          "id" : "4b326353.484a3c"
-      },
-      {
-          "id" : "4b326353.484a3c",
-          "port" : 0
-      },
-      {
-          "wires" : [
-            [
-                "495056ad.f6a658"
-            ],
-            [
-                "3d594598.444a5a"
-            ]
-          ],
-          "name" : "For Each Model",
-          "outputs" : 2,
-          "noerr" : 0,
-          "func" : "if(msg.hasOwnProperty(\"records\") && msg.records.hasOwnProperty(\"models\") && Array.isArray(msg.records.models) && msg.records.models.length > 0){\n    msg.records.model_type = msg.records.models.pop();\n    return [null, msg];\n}\nelse {\n    // ignore models\n    return [msg, null];\n}\n\n",
-          "y" : 120,
-          "x" : 220,
-          "z" : "df6d98dd.00d378",
-          "type" : "function",
-          "id" : "4b326353.484a3c"
-      }
-    ]
-    */
+  getHttpInMapping: (inJSON) => {
+    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
+    const properties = ['id', 'name', 'url', 'upload', 'method', 'type', 'z', 'wires'];
 
+    return getNodeTypeProps(inJSON, 'http in', properties);
+  },
+  getHttpRequestMapping: (inJSON) => {
+    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
+    const properties = ['id', 'name', 'url', 'ret', 'method', 'type', 'z', 'wires'];
+
+    return getNodeTypeProps(inJSON, 'http request', properties);
+  },
+  getHttpResponseMapping: (inJSON) => {
+    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
+    const properties = ['id', 'name', 'type', 'z', 'wires'];  // There is a prop "headers", but it is always an empty {}
+
+    return getNodeTypeProps(inJSON, 'http response', properties);
+  },
+  getSubflowInstanceMapping: (inJSON) => {
+    // $..[?(@.type =~ /subflow:.*/)]['id','name','wires','z'] // Unfortunately, this_ works perfect with Jayway's Java implementatio, but not NodeJS's...
+    // Get list of all possible node types and filter against them should result in all the /^(subflow:)(.*)/ matches where $2 points to a sidebar subflow.
+    // There are leftovers! Checking inJSON with ("type": ")(.*:) sees 495 of any ':' separated type key... asi quien son otras?
+    const query = subflowInstanceQuery;
+    const queryResult = jsonpath.query(inJSON, query);
+    const unwanted = ['name'].concat(unwantedProperties); // Name is always blank. It should be built.
+    const nodesComplete = [];
+    queryResult.forEach(node => {
+      // if (node.type) console.log(node);
+      if (node.type && /^subflow:.*/.test(node.type)) {
+        const keys = Object.keys(node).filter(key => unwanted.indexOf(key) === -1);
+        nodesComplete.push(_.pick(node, keys)); // in reality if_there is a node.type it is subflow:<class_id>
+      }
+    });
+    console.log(nodesComplete.length, ' subflow instance nodes found.');
+
+    return nodesComplete;
   }
 };

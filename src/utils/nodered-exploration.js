@@ -39,7 +39,7 @@ const subflowInstanceQuery = `$..[?(${jpathNegativeQuery.join(' && ')})]`;
 
 const getJSONPathQuery = (nodeType, properties = []) => {
   return `$.${nodeType ? `flow[?(@.type == '${nodeType}')]` : 'flow.*'}${properties.length > 0 ? `[${properties.map(p => `'${p}'`)}]` : ''}`;
-}
+};
 // Product of refactoring.
 const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
   const query = getJSONPathQuery(nodeType, properties);
@@ -62,7 +62,7 @@ module.exports = {
 
     if (fs.existsSync(filePath)) {
       try {
-        console.log(`______IN: ${fileName} :@: ${filePath}______`);
+        console.log(`\n______IN: ${fileName} :@: ${filePath}______\n`);
         const nodeRedJSON = JSON.parse(fs.readFileSync(filePath));
 
         return nodeRedJSON;
@@ -131,7 +131,7 @@ module.exports = {
     //   idMap[z]
     // });
 
-    return;
+    return idMap;
     // const properties = ['z', 'id', 'type', 'name', 'label'];
 
     // return getNodeTypeProps(inJSON, null, properties);
@@ -159,7 +159,7 @@ module.exports = {
   },
   getFunctionMapping: (inJSON) => {
     // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
-    const properties = ['id', 'name', 'func', 'wires'];
+    const properties = ['id', 'name', 'func', 'wires', 'z'];
 
     return getNodeTypeProps(inJSON, 'function', properties);
   },
@@ -199,5 +199,34 @@ module.exports = {
     console.log(nodesComplete.length, ' subflow instance nodes found.');
 
     return nodesComplete;
+  },
+  findByName: (inJSON, searchString) => {
+    // Supports node type: Function (only). TODO: Extend to all node types and support name|label prop (tabs have label instead of name)
+    const subflowsLast = (a, b) => {
+      const regex = /-subflow-/;
+      const aSubflow = regex.test(a), bSubflow = regex.test(b);
+      if (aSubflow && !bSubflow) return -1;
+      if (bSubflow && !aSubflow) return 1;        
+      return (a.toLowerCase() > b.toLowerCase()) ? 1 : (a.toLowerCase() < b.toLowerCase()) ? -1 : 0;
+    };
+    const tabName = (a, b) => {
+      const regex = /\((-{0,1}[\s\w]+-{0,1})\)/;
+      const aTab = a.match(regex)[0].replace(regex, '$1').toLowerCase(), bTab = b.match(regex)[0].replace(regex, '$1').toLowerCase();   
+      return (aTab > bTab) ? 1 : (aTab < bTab) ? -1 : 0;
+    };
+    const tabs = module.exports.getTabMapping(inJSON);
+    const nodes = module.exports.getFunctionMapping(inJSON);
+    const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
+    // console.log('Search regex: ', regex);
+    const nodeNames = nodes.filter(node => {
+      // Using RegExp we will >> filter << results, eventually :?
+      const nodeName = node.name || undefined;
+      return regex.test(nodeName);
+    }).map(x => {
+      const tab = tabs.find(tab => tab.id === x.z);
+      return `${x.name} (${(tab ? tab.label : '-subflow-')})`;
+    });
+    console.log(nodeNames.length, ' matches found.');
+    console.log(nodeNames.sort(subflowsLast).sort(tabName).join(', '));
   }
 };

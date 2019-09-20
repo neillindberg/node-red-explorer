@@ -21,7 +21,6 @@ const mapAll = () => {
             console.log('Running operation: ', operation.cli);
             const result = operation.func(sourceJSON, operation.nodeType);
             fs.writeFileSync(path.join(__dirname, '../', 'tmp', operation.defaultFile), JSON.stringify(result, null, 4));
-            // console.log(result);
         }
     });
     return 'DONE';
@@ -58,10 +57,11 @@ const operations = [
     { cli: 'Switch Map (switch)', shorthand: 'switch', func: exploreNodeRED.getByNodeType, defaultFile: 'switches.json', nodeType: 'switch' },
     { cli: 'XML Map (xml)', shorthand: 'xml', func: exploreNodeRED.getByNodeType, defaultFile: 'xmls.json', nodeType: 'xml' },
     { cli: 'Function-to-File (ftf <function_name>)', shorthand: 'ftf', func: convertFunctionJSON.writeFunctionByName },
+    { cli: 'Find-by-Name (fbn)', shorthand: 'fbn', func: exploreNodeRED.findByName },
     { cli: 'Map All (mapall)', shorthand: 'mapall', func: mapAll }
 ].sort(sortWithNodeType);
-
-const nodeTypes = exploreNodeRED.getNodeTypeList(sourceJSON);
+// Use NodeRED Exploration to auto-render CLI options for reading/writing each nodeType.
+// const nodeTypes = exploreNodeRED.getNodeTypeList(sourceJSON);
 // const nodeMapOperations = nodeTypes.map(nodeType => {
 //     const fullName = _.startCase(nodeType), shorthand = nodeType.replace(/[\s-_]/g, '');
 //     console.log(fullName, shorthand);
@@ -76,17 +76,19 @@ const nodeTypes = exploreNodeRED.getNodeTypeList(sourceJSON);
 // });
 // operations.concat(nodeMapOperations);
 
+const joinAndStrip = input => input.join(' ').replace(/["']/g, '');
+
 // Setup CLI
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: `Please choose operation (human readable: --help): \n[${operations.map(op => op.shorthand).join(' | ')}] \n> `
+    prompt: `Please choose operation (for human readable: help): \n[${operations.map(op => op.shorthand).join(' | ')}] \n> `
 });
 
 rl.on('line', (line) => {
     const input = line.trim().split(/\s/);
     const inputOp = input.shift();
-    if (inputOp === '--help') {
+    if (inputOp === 'help') {
         const helpOut = [], space = ' ', newline = '\n', cellLength = 40;
         for (let i = 0; i < operations.length; i += 3) {
             operations.slice(i, i + 3).forEach(op => helpOut.push(op.cli + space.repeat(cellLength - op.cli.length)));
@@ -99,18 +101,20 @@ rl.on('line', (line) => {
         console.log(feedback);
         if (operation) {
             const flag = input.shift();
-            const result = operation.func(sourceJSON, (operation.nodeType ? operation.nodeType : (flag && flag === '-n') ? input.join(' ').replace(/["']/g, '') : null));
-            if (input.length > 0) {
+            console.log('Seeing flag: ', flag);
+            const result = operation.func(sourceJSON, (operation.nodeType ? operation.nodeType : 
+                (flag && flag === '-n') ? joinAndStrip(input) : null));
+            if (input.length > 0 && flag !== '-n') {
                 // TODO: Refactor. When we started adding more flags this became spaghetti.
                 if (flag === '-o') {
                     // write to file
                     const tmpPath = path.join(__dirname, '../', 'tmp');
                     if (!fs.existsSync) fs.mkdirSync(tmpPath);
-                    fs.writeFileSync(path.join(tmpPath, input), JSON.stringify(result, null, 4));
+                    fs.writeFileSync(path.join(tmpPath, input || operation.defaultFile), JSON.stringify(result, null, 4));
                 }
             } else {
                 // Just log to stdout.
-                console.log(result);
+                console.log(result + '\n');
             }
         }
         console.log('\n---- operation completed ----\n');

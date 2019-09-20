@@ -12,7 +12,6 @@ const functionsPath = path.join(__dirname, '../../', 'tmp', 'functions');
 const writeFunctionToFile = (functionName, jsonData) => {
     console.log(`$[?(@.name == '${functionName}')]['func']`);
     const functionBody = jsonpath.query(jsonData, `$[?(@.name == '${functionName}')]['func']`);
-    console.log('functionBode: ', functionBody[0]);
     if (functionBody) {
         const functionFile = functionName.toLowerCase().replace(/\s+/g, '-') + '.js';
         fs.writeFile(path.join(functionsPath, functionFile), functionBody[0], err => {
@@ -20,10 +19,12 @@ const writeFunctionToFile = (functionName, jsonData) => {
                 console.log(`Error wrting '${functionName}' to ${functionFile}`, err);
                 return;
             }
-            return `Done writing func of '${functionName}' to file: ${functionFile}`;
+            console.log(`Done writing func of '${functionName}' to file: ${functionFile}`);
+            return;
         });
     } else {
-        return `Nothing found matching function name '${functionName}'`;
+        console.log(`Nothing found matching function name '${functionName}'`);
+        return;
     }
 };
 
@@ -31,7 +32,7 @@ const writeFunctionByName = (inJSON /*for todo in adding new functions.json on r
     console.log('wFByName with input: ', functionName);
 
     if (!fs.existsSync(functionsPath)) {
-        console.log("I think I'm making the functions directory...");
+        console.log('I think I\'m making the functions directory...');
         fs.mkdirSync(functionsPath);
     }
     // TODO: Automatically render a new funcitons.json first!
@@ -42,7 +43,7 @@ const writeFunctionByName = (inJSON /*for todo in adding new functions.json on r
             return;
         }
         const jsonData = JSON.parse(data);
-        return writeFunctionToFile(functionName, jsonData);
+        writeFunctionToFile(functionName, jsonData);
     });    
 };
 

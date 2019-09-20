@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"No testing setup just yet, y'all.\"",
-    "start": "node ./src/index.js"
+    "start": "eslint . --fix && node ./src/index.js"
   },
   "author": "Neil G. Lindberg",
   "license": "ISC",

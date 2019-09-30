@@ -29,10 +29,7 @@ const writeFunctionToFile = (functionName, jsonData) => {
 };
 
 const writeFunctionByName = (inJSON /*for todo in adding new functions.json on run*/, functionName) => {
-    console.log('wFByName with input: ', functionName);
-
     if (!fs.existsSync(functionsPath)) {
-        console.log('I think I\'m making the functions directory...');
         fs.mkdirSync(functionsPath);
     }
     // TODO: Automatically render a new funcitons.json first!

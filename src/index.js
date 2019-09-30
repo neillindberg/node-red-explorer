@@ -28,7 +28,7 @@ const mapAll = () => {
 
 const sortWithNodeType = (a, b) => {
     if (a.nodeType && !b.nodeType) return -1;
-    if (b.nodeType && !a.nodeType) return 1;        
+    if (b.nodeType && !a.nodeType) return 1;
     return (a.shorthand > b.shorthand) ? 1 : (a.shorthand < b.shorthand) ? -1 : 0;
 };
 // File is loaded. Allow user choice at CLI.
@@ -39,7 +39,7 @@ const operations = [
     { cli: 'Id(s) (ids)', shorthand: 'ids', func: exploreNodeRED.getIdMap },
     { cli: 'Tab Map (tm)', shorthand: 'tm', func: exploreNodeRED.getTabMapping, defaultFile: 'tabs.json' },
     { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json' },
-    { cli: 'Http In Map (httpin)', shorthand: 'httpin', func: exploreNodeRED.getHttpInMapping, defaultFile: 'http_in.json' },
+    { cli: 'Http In Map (httpin)', shorthand: 'httpin', func: exploreNodeRED.getByNodeType, defaultFile: 'http_in_by_node_type.json', nodeType: 'http in' },
     { cli: 'Http Request Map (httpreq)', shorthand: 'httpreq', func: exploreNodeRED.getHttpRequestMapping, defaultFile: 'http_requests.json' },
     { cli: 'Http Response Map (httpres)', shorthand: 'httpres', func: exploreNodeRED.getHttpResponseMapping, defaultFile: 'http_responses.json' },
     { cli: 'Subflow Instance Map (sim)', shorthand: 'sim', func: exploreNodeRED.getSubflowInstanceMapping, defaultFile: 'subflow_instances.json' },
@@ -58,6 +58,7 @@ const operations = [
     { cli: 'XML Map (xml)', shorthand: 'xml', func: exploreNodeRED.getByNodeType, defaultFile: 'xmls.json', nodeType: 'xml' },
     { cli: 'Function-to-File (ftf <function_name>)', shorthand: 'ftf', func: convertFunctionJSON.writeFunctionByName },
     { cli: 'Find-by-Name (fbn)', shorthand: 'fbn', func: exploreNodeRED.findByName },
+    { cli: 'Find-by-Route (fbr)', shorthand: 'fbr', func: exploreNodeRED.findByRoute },
     { cli: 'Map All (mapall)', shorthand: 'mapall', func: mapAll }
 ].sort(sortWithNodeType);
 // Use NodeRED Exploration to auto-render CLI options for reading/writing each nodeType.
@@ -101,8 +102,7 @@ rl.on('line', (line) => {
         console.log(feedback);
         if (operation) {
             const flag = input.shift();
-            console.log('Seeing flag: ', flag);
-            const result = operation.func(sourceJSON, (operation.nodeType ? operation.nodeType : 
+            const result = operation.func(sourceJSON, (operation.nodeType ? operation.nodeType :
                 (flag && flag === '-n') ? joinAndStrip(input) : null));
             if (input.length > 0 && flag !== '-n') {
                 // TODO: Refactor. When we started adding more flags this became spaghetti.
@@ -114,12 +114,14 @@ rl.on('line', (line) => {
                 }
             } else {
                 // Just log to stdout.
-                console.log(result + '\n');
+                console.log(((result && typeof result === 'object') ? JSON.stringify(result, null, 2) : result || '') + '\n');
             }
         }
-        console.log('\n---- operation completed ----\n');
     }
-    rl.prompt();
+    setTimeout(() => {
+        console.log('\n---- operation completed ----\n');
+        rl.prompt();
+    }, 500);
 }).on('close', () => {
     console.log('NodeRED Exploration session terminated.');
     process.exit(0);

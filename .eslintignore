@@ -1,2 +1,4 @@
 build/**
 tmp/**
+keep/**
+scratch.js

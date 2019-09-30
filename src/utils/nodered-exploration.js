@@ -8,7 +8,7 @@ const flat = require('flat');
 const jsonpath = require('jsonpath');
 
 const flowKey = /flow\.[\d]+/;
-const unwantedProperties = ['x', 'y'];
+const unwantedProperties = ['x', 'y', 'swaggerDoc'];
 const uniqueNodeTypes = [
   'catch',
   'change',
@@ -31,6 +31,20 @@ const uniqueNodeTypes = [
   'xml'
 ];
 
+const subflowsLastSort = (a, b) => {
+  const regex = /-subflow-/;
+  const aSubflow = regex.test(a), bSubflow = regex.test(b);
+  if (aSubflow && !bSubflow) return -1;
+  if (bSubflow && !aSubflow) return 1;
+  return (a.toLowerCase() > b.toLowerCase()) ? 1 : (a.toLowerCase() < b.toLowerCase()) ? -1 : 0;
+};
+
+const tabNameSort = (a, b) => {
+  const regex = /\((-{0,1}[\s\w]+-{0,1})\)/;
+  const aTab = a.match(regex)[0].replace(regex, '$1').toLowerCase(), bTab = b.match(regex)[0].replace(regex, '$1').toLowerCase();
+  return (aTab > bTab) ? 1 : (aTab < bTab) ? -1 : 0;
+};
+
 const jpathNegativeQuery = uniqueNodeTypes.map(nodeType => {
   return `@.type != '${nodeType}'`;
 });
@@ -45,7 +59,7 @@ const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
   const query = getJSONPathQuery(nodeType, properties);
   console.log('Running jsonpath query: ', query);
   const queryResult = jsonpath.query(inJSON, query);
-  
+
   if (properties.length > 0 && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
   const complete = [];
   for (let i = 0; i < queryResult.length; i += properties.length) {
@@ -140,6 +154,7 @@ module.exports = {
     const query = `$..[?(@.type == '${type}')]`;
     const queryResult = jsonpath.query(inJSON, query);
 
+    queryResult.forEach(qr => unwantedProperties.forEach(up => delete qr[up]));
     return queryResult;
   },
   // TODO: Add list with pointers to next flow. ? is that on wires[n].id ?
@@ -201,32 +216,36 @@ module.exports = {
     return nodesComplete;
   },
   findByName: (inJSON, searchString) => {
-    // Supports node type: Function (only). TODO: Extend to all node types and support name|label prop (tabs have label instead of name)
-    const subflowsLast = (a, b) => {
-      const regex = /-subflow-/;
-      const aSubflow = regex.test(a), bSubflow = regex.test(b);
-      if (aSubflow && !bSubflow) return -1;
-      if (bSubflow && !aSubflow) return 1;        
-      return (a.toLowerCase() > b.toLowerCase()) ? 1 : (a.toLowerCase() < b.toLowerCase()) ? -1 : 0;
-    };
-    const tabName = (a, b) => {
-      const regex = /\((-{0,1}[\s\w]+-{0,1})\)/;
-      const aTab = a.match(regex)[0].replace(regex, '$1').toLowerCase(), bTab = b.match(regex)[0].replace(regex, '$1').toLowerCase();   
-      return (aTab > bTab) ? 1 : (aTab < bTab) ? -1 : 0;
-    };
+    // let functionBodySearch;
+    // if (searchString instanceof Array) [searchString, functionBodySearch] = searchString;
+    // TODO: Consolidate the "findBy"s, atleast Route and Function Name...
     const tabs = module.exports.getTabMapping(inJSON);
     const nodes = module.exports.getFunctionMapping(inJSON);
     const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
-    // console.log('Search regex: ', regex);
     const nodeNames = nodes.filter(node => {
-      // Using RegExp we will >> filter << results, eventually :?
       const nodeName = node.name || undefined;
       return regex.test(nodeName);
     }).map(x => {
       const tab = tabs.find(tab => tab.id === x.z);
-      return `${x.name} (${(tab ? tab.label : '-subflow-')})`;
+      // const matches = (functionBodySearch) ? x.func.match(new RegExp(functionBodySearch.trim(), 'gi')) : null; 
+      return `${x.name} (${(tab ? tab.label : '-subflow-')})\n`;
     });
     console.log(nodeNames.length, ' matches found.');
-    console.log(nodeNames.sort(subflowsLast).sort(tabName).join(', '));
+    console.log(nodeNames.sort(subflowsLastSort).sort(tabNameSort).join(''));
+  },
+  findByRoute: (inJSON, searchString) => {
+    // TODO: Consolidate the "findBy"s, atleast Route and Function Name...
+    const tabs = module.exports.getTabMapping(inJSON);
+    const nodes = module.exports.getByNodeType(inJSON, 'http in');
+    const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
+    const nodeRoutes = nodes.filter(node => {  // TODO. Routes and Node Names are interchangable when handling more than one type (http in and functions)
+      const nodeURL = node.url || undefined;
+      return regex.test(nodeURL);
+    }).map(x => {
+      const tab = tabs.find(tab => tab.id === x.z);
+      return `${x.url} (${(tab ? tab.label : '-subflow-')})\n`;
+    });
+    console.log(nodeRoutes.length, ' matches found.');
+    console.log(nodeRoutes.sort(subflowsLastSort).sort(tabNameSort).join(''));
   }
 };

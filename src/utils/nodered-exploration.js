@@ -233,6 +233,19 @@ module.exports = {
     console.log(nodeNames.length, ' matches found.');
     console.log(nodeNames.sort(subflowsLastSort).sort(tabNameSort).join(''));
   },
+  grepFunctionBody: (inJSON, searchString) => {
+    const tabs = module.exports.getTabMapping(inJSON);
+    const functionNodes = module.exports.getFunctionMapping(inJSON);
+    const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
+    const nodeNames = functionNodes.filter(node => regex.test(node.func || undefined))
+    .map(x => {
+      const tab = tabs.find(tab => tab.id === x.z);
+      // const matches = (functionBodySearch) ? x.func.match(new RegExp(functionBodySearch.trim(), 'gi')) : null; 
+      return `\x1b[38;5;160m${x.name} (${(tab ? tab.label : '-subflow-')})\x1b[m\n${x.func}\n\n`;
+    });
+    console.log(nodeNames.length, ' matches found.');
+    console.log(nodeNames.sort(subflowsLastSort).sort(tabNameSort).join(''));
+  },
   findByRoute: (inJSON, searchString) => {
     // TODO: Consolidate the "findBy"s, atleast Route and Function Name...
     const tabs = module.exports.getTabMapping(inJSON);

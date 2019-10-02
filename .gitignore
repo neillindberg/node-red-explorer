@@ -4,3 +4,4 @@ dist/**
 tmp/**
 scratch.js
 keep/**
+in.json

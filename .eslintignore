@@ -2,3 +2,4 @@ build/**
 tmp/**
 keep/**
 scratch.js
+in.json

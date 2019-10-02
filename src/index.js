@@ -2,7 +2,7 @@
 Converter for NodeRED to NodeJS.
 Uses two utilities:
     - Convert existing to ES6
-    - Convert ES6 to NodeJS
+    - TODO: Convert ES6 to NodeJS
 */
 const exploreNodeRED = require('./utils/nodered-exploration');
 const convertFunctionJSON = require('./utils/convert-function-json');
@@ -11,8 +11,9 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-// TODO: Make filename a param to pass into module
-const fileName = /*'../../switch.json'; */ '../../in.json';
+// TODO: Make filename a param to pass into module allowing switching between NodeRED Flows.
+// file is expected to be the output of a NodeRED Flow en total { _id, _rev, flow: [] }
+const fileName = '../../in.json'; 
 const sourceJSON = exploreNodeRED.getJSONfromNodeRED(fileName);
 
 const mapAll = () => {
@@ -32,13 +33,14 @@ const sortWithNodeType = (a, b) => {
     return (a.shorthand > b.shorthand) ? 1 : (a.shorthand < b.shorthand) ? -1 : 0;
 };
 // File is loaded. Allow user choice at CLI.
+// Use NodeRED Exploration to auto-render CLI options for reading/writing each nodeType.
 const operations = [
     { cli: 'Flatten Paths (fp)', shorthand: 'fp', func: exploreNodeRED.getFlattenedJSON },
     { cli: 'Type List (tl)', shorthand: 'tl', func: exploreNodeRED.getNodeTypeList },
     { cli: 'Unique Attribute List (ual)', shorthand: 'ual', func: exploreNodeRED.getAttributeList },
     { cli: 'Id(s) (ids)', shorthand: 'ids', func: exploreNodeRED.getIdMap },
-    { cli: 'Tab Map (tm)', shorthand: 'tm', func: exploreNodeRED.getTabMapping, defaultFile: 'tabs.json' },
-    { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json' },
+    { cli: 'Tab Map (tm)', shorthand: 'tm', func: exploreNodeRED.getByNodeType, defaultFile: 'tabs.json', nodeType: 'tab' },
+    { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json', nodeType: 'function' },
     { cli: 'Http In Map (httpin)', shorthand: 'httpin', func: exploreNodeRED.getByNodeType, defaultFile: 'http_in_by_node_type.json', nodeType: 'http in' },
     { cli: 'Http Request Map (httpreq)', shorthand: 'httpreq', func: exploreNodeRED.getHttpRequestMapping, defaultFile: 'http_requests.json' },
     { cli: 'Http Response Map (httpres)', shorthand: 'httpres', func: exploreNodeRED.getHttpResponseMapping, defaultFile: 'http_responses.json' },
@@ -58,32 +60,19 @@ const operations = [
     { cli: 'XML Map (xml)', shorthand: 'xml', func: exploreNodeRED.getByNodeType, defaultFile: 'xmls.json', nodeType: 'xml' },
     { cli: 'Function-to-File (ftf <function_name>)', shorthand: 'ftf', func: convertFunctionJSON.writeFunctionByName },
     { cli: 'Find-by-Name (fbn)', shorthand: 'fbn', func: exploreNodeRED.findByName },
+    { cli: 'Grep-func-Body (grepf)', shorthand: 'grepf', func: exploreNodeRED.grepFunctionBody },
     { cli: 'Find-by-Route (fbr)', shorthand: 'fbr', func: exploreNodeRED.findByRoute },
     { cli: 'Map All (mapall)', shorthand: 'mapall', func: mapAll }
 ].sort(sortWithNodeType);
-// Use NodeRED Exploration to auto-render CLI options for reading/writing each nodeType.
-// const nodeTypes = exploreNodeRED.getNodeTypeList(sourceJSON);
-// const nodeMapOperations = nodeTypes.map(nodeType => {
-//     const fullName = _.startCase(nodeType), shorthand = nodeType.replace(/[\s-_]/g, '');
-//     console.log(fullName, shorthand);
-//     const option = {
-//         cli: `${fullName} (${shorthand})`,
-//         defaultFile: `${nodeType}.json`,
-//         func: exploreNodeRED.getByNodeType,
-//         nodeType,
-//         shorthand
-//     };
-//     return option;
-// });
-// operations.concat(nodeMapOperations);
 
 const joinAndStrip = input => input.join(' ').replace(/["']/g, '');
 
+const bashColors = [10, 12, 13, 14, 1];
 // Setup CLI
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: `Please choose operation (for human readable: help): \n[${operations.map(op => op.shorthand).join(' | ')}] \n> `
+    prompt: `\x1b[38;5;11mPlease choose operation (for human readable: help): \n[ ${operations.map((op, index) => `\x1b[38;5;${bashColors[(index >= bashColors.length) ? index % bashColors.length : index]}m${op.shorthand}\x1b[m`).join(' | ')}\x1b[38;5;11m ] \n>\x1b[m `
 });
 
 rl.on('line', (line) => {

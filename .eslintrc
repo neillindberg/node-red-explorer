@@ -1,36 +1,36 @@
 {
-    "root": true,
-    "env":{
-            "node": true
-    },
-    "extends": [
-            "eslint:recommended"
-    ],
-    "parserOptions": {
-            "ecmaVersion": 6,
-            "sourceType": "module"
-    },
-    "rules": {
-            "semi": "error",
-            "quotes": [
-                    "error",
-                    "single"
-            ],
-            "comma-dangle": [
-                    "error",
-                    "never"
-            ],
-            "space-before-function-paren": [
-                    "error",
-                    "always"
-            ],
-            "array-bracket-spacing": [
-                    "error",
-                    "never"
-            ],
-            "sort-imports": "off",
-            "linebreak-style": "off",
-            "prefer-named-capture-group": "off",
-            "no-console": "off"
-    }
+        "root": true,
+        "env": {
+                "node": true
+        },
+        "extends": [
+                "eslint:recommended"
+        ],
+        "parserOptions": {
+                "ecmaVersion": 6,
+                "sourceType": "module"
+        },
+        "rules": {
+                "semi": "error",
+                "quotes": [
+                        "error",
+                        "single"
+                ],
+                "comma-dangle": [
+                        "error",
+                        "never"
+                ],
+                "space-before-function-paren": [
+                        "error",
+                        "always"
+                ],
+                "array-bracket-spacing": [
+                        "error",
+                        "never"
+                ],
+                "sort-imports": "off",
+                "linebreak-style": "off",
+                "prefer-named-capture-group": "off",
+                "no-console": "off"
+        }
 }

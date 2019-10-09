@@ -260,5 +260,25 @@ module.exports = {
     });
     console.log(nodeRoutes.length, ' matches found.');
     console.log(nodeRoutes.sort(subflowsLastSort).sort(tabNameSort).join(''));
+  },
+  findBySubflowName: (inJSON, searchString) => {
+    // TODO: Consolidate the "findBy"s, atleast Route and Function Name...
+    const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
+    const tabs = module.exports.getTabMapping(inJSON);
+    const subflowClasses = module.exports.getByNodeType(inJSON, 'subflow');
+    const subflow = subflowClasses.find(s => regex.test(s.name));
+    const instances = module.exports.getSubflowInstanceMapping(inJSON);
+    const subflowInstances = instances.filter(si => {
+      const subflowType = 'subflow:' + subflow.id;
+      return si.type === subflowType;
+    }).map(x => {
+      let tab, subflowTab;
+      tab = tabs.find(tab => tab.id === x.z);
+      if (!tab) subflowTab = subflowClasses.find(sc => sc.id === x.z);
+      // console.log('Thinking of x.name, subflow.name, and tab.label', ((x && x.name) || 'noname'), (subflow && subflow.name), (tab && tab.label));
+      return `${(x.name) ? x.name : 'Instance of: ' + subflow.name} (${(tab ? tab.label : (subflowTab && subflowTab.name) + ' -subflow tab-')})\n`;
+    });
+    console.log(subflowInstances.length, ' matches found.');
+    console.log(subflowInstances.sort().join(''));
   }
 };

@@ -60,6 +60,7 @@ const operations = [
     { cli: 'XML Map (xml)', shorthand: 'xml', func: exploreNodeRED.getByNodeType, defaultFile: 'xmls.json', nodeType: 'xml' },
     { cli: 'Function-to-File (ftf <function_name>)', shorthand: 'ftf', func: convertFunctionJSON.writeFunctionByName },
     { cli: 'Find-by-Name (fbn)', shorthand: 'fbn', func: exploreNodeRED.findByName },
+    { cli: 'Find-by-Subflow-Name (fbsn)', shorthand: 'fbsn', func: exploreNodeRED.findBySubflowName },
     { cli: 'Grep-func-Body (grepf)', shorthand: 'grepf', func: exploreNodeRED.grepFunctionBody },
     { cli: 'Find-by-Route (fbr)', shorthand: 'fbr', func: exploreNodeRED.findByRoute },
     { cli: 'Map All (mapall)', shorthand: 'mapall', func: mapAll }

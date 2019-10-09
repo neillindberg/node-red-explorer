@@ -45,9 +45,7 @@ const tabNameSort = (a, b) => {
   return (aTab > bTab) ? 1 : (aTab < bTab) ? -1 : 0;
 };
 
-const jpathNegativeQuery = uniqueNodeTypes.map(nodeType => {
-  return `@.type != '${nodeType}'`;
-});
+const jpathNegativeQuery = uniqueNodeTypes.map(nodeType => `@.type != '${nodeType}'`);
 
 const subflowInstanceQuery = `$..[?(${jpathNegativeQuery.join(' && ')})]`;
 
@@ -57,10 +55,9 @@ const getJSONPathQuery = (nodeType, properties = []) => {
 // Product of refactoring.
 const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
   const query = getJSONPathQuery(nodeType, properties);
-  console.log('Running jsonpath query: ', query);
   const queryResult = jsonpath.query(inJSON, query);
 
-  if (properties.length > 0 && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
+  // if ((properties.length > 0) && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
   const complete = [];
   for (let i = 0; i < queryResult.length; i += properties.length) {
     const values = queryResult.slice(i, i + properties.length);
@@ -173,25 +170,21 @@ module.exports = {
     return getNodeTypeProps(inJSON, 'subflow', properties);
   },
   getFunctionMapping: (inJSON) => {
-    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'func', 'wires', 'z'];
 
     return getNodeTypeProps(inJSON, 'function', properties);
   },
   getHttpInMapping: (inJSON) => {
-    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'url', 'upload', 'method', 'type', 'z', 'wires'];
 
     return getNodeTypeProps(inJSON, 'http in', properties);
   },
   getHttpRequestMapping: (inJSON) => {
-    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'url', 'ret', 'method', 'type', 'z', 'wires'];
 
     return getNodeTypeProps(inJSON, 'http request', properties);
   },
   getHttpResponseMapping: (inJSON) => {
-    // $..[?(@.type == 'function')][id,name,func]  << Shows as string array. Wanting objects.
     const properties = ['id', 'name', 'type', 'z', 'wires'];  // There is a prop "headers", but it is always an empty {}
 
     return getNodeTypeProps(inJSON, 'http response', properties);
@@ -275,7 +268,6 @@ module.exports = {
       let tab, subflowTab;
       tab = tabs.find(tab => tab.id === x.z);
       if (!tab) subflowTab = subflowClasses.find(sc => sc.id === x.z);
-      // console.log('Thinking of x.name, subflow.name, and tab.label', ((x && x.name) || 'noname'), (subflow && subflow.name), (tab && tab.label));
       return `${(x.name) ? x.name : 'Instance of: ' + subflow.name} (${(tab ? tab.label : (subflowTab && subflowTab.name) + ' -subflow tab-')})\n`;
     });
     console.log(subflowInstances.length, ' matches found.');

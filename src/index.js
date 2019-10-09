@@ -6,20 +6,19 @@ Uses two utilities:
 */
 const exploreNodeRED = require('./utils/nodered-exploration');
 const convertFunctionJSON = require('./utils/convert-function-json');
-// const toNodeJS = require('./utils/nodered-json-to-nodejs-express'); // TODO: Next!
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
 // TODO: Make filename a param to pass into module allowing switching between NodeRED Flows.
 // file is expected to be the output of a NodeRED Flow en total { _id, _rev, flow: [] }
-const fileName = '../../in.json'; 
+const fileName = process.argv.slice(2).pop() || '../../in.json'; 
 const sourceJSON = exploreNodeRED.getJSONfromNodeRED(fileName);
 
 const mapAll = () => {
     operations.forEach(operation => {
         if (operation && operation.nodeType) {
-            console.log('Running operation: ', operation.cli);
+            console.log('op: ', operation.cli);
             const result = operation.func(sourceJSON, operation.nodeType);
             fs.writeFileSync(path.join(__dirname, '../', 'tmp', operation.defaultFile), JSON.stringify(result, null, 4));
         }
@@ -68,7 +67,8 @@ const operations = [
 
 const joinAndStrip = input => input.join(' ').replace(/["']/g, '');
 
-const bashColors = [10, 12, 13, 14, 1];
+const bashColors = [10, 12, 13, 14, 18];
+// const bashColors = [10, 208, 13, 14, 18];
 // Setup CLI
 const rl = readline.createInterface({
     input: process.stdin,
@@ -85,7 +85,7 @@ rl.on('line', (line) => {
             operations.slice(i, i + 3).forEach(op => helpOut.push(op.cli + space.repeat(cellLength - op.cli.length)));
             helpOut.push(newline);
         }
-        console.log(helpOut.join(''));
+        console.log(`\x1b[38;5;36m${helpOut.join('')}\x1b[m`);
     } else {
         const operation = operations.find(op => op.shorthand === inputOp);
         const feedback = operation ? 'Running operation: ' + operation.cli : 'Unrecognized option. Try again. (Control + C = Exit)';

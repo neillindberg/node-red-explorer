@@ -56,8 +56,9 @@ const getJSONPathQuery = (nodeType, properties = []) => {
 const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
   const query = getJSONPathQuery(nodeType, properties);
   const queryResult = jsonpath.query(inJSON, query);
+  console.log('getNodeTypeProps: ', queryResult);
 
-  // if ((properties.length > 0) && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
+  if ((properties.length > 0) && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
   const complete = [];
   for (let i = 0; i < queryResult.length; i += properties.length) {
     const values = queryResult.slice(i, i + properties.length);
@@ -73,9 +74,9 @@ module.exports = {
 
     if (fs.existsSync(filePath)) {
       try {
-        console.log(`\n______IN: ${fileName} :@: ${filePath}______\n`);
+        console.log(`\nReading JSON from: ${filePath}\n`);
         const nodeRedJSON = JSON.parse(fs.readFileSync(filePath));
-
+        console.log((nodeRedJSON.flow && Array.isArray(nodeRedJSON.flow)) ? 'Input looks valid.' : 'Invalid input shape. Expect errors.');
         return nodeRedJSON;
       } catch (e) {
         console.log('Error during found file read.', e);
@@ -227,8 +228,8 @@ module.exports = {
     console.log(nodeNames.sort(subflowsLastSort).sort(tabNameSort).join(''));
   },
   grepFunctionBody: (inJSON, searchString) => {
-    const tabs = module.exports.getTabMapping(inJSON);
-    const functionNodes = module.exports.getFunctionMapping(inJSON);
+    const tabs = module.exports.getByNodeType(inJSON, 'tab');
+    const functionNodes = module.exports.getByNodeType(inJSON, 'function');
     const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
     const nodeNames = functionNodes.filter(node => regex.test(node.func || undefined))
     .map(x => {

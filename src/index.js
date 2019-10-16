@@ -1,8 +1,6 @@
 /*
-Converter for NodeRED to NodeJS.
-Uses two utilities:
-    - Convert existing to ES6
-    - TODO: Convert ES6 to NodeJS
+@author: Neil G. Lindberg
+@description: Exploration tool for NodeRED to NodeJS.
 */
 const exploreNodeRED = require('./utils/nodered-exploration');
 const convertFunctionJSON = require('./utils/convert-function-json');
@@ -10,8 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-// TODO: Make filename a param to pass into module allowing switching between NodeRED Flows.
 // file is expected to be the output of a NodeRED Flow en total { _id, _rev, flow: [] }
+console.log('If input JSON is not in the shape { flow: [] } expect errors.');
 const fileName = process.argv.slice(2).pop() || '../../in.json'; 
 const sourceJSON = exploreNodeRED.getJSONfromNodeRED(fileName);
 
@@ -40,6 +38,7 @@ const operations = [
     { cli: 'Id(s) (ids)', shorthand: 'ids', func: exploreNodeRED.getIdMap },
     { cli: 'Tab Map (tm)', shorthand: 'tm', func: exploreNodeRED.getByNodeType, defaultFile: 'tabs.json', nodeType: 'tab' },
     { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json', nodeType: 'function' },
+    // { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getByNodeType, defaultFile: 'functions.json', nodeType: 'function' },
     { cli: 'Http In Map (httpin)', shorthand: 'httpin', func: exploreNodeRED.getByNodeType, defaultFile: 'http_in_by_node_type.json', nodeType: 'http in' },
     { cli: 'Http Request Map (httpreq)', shorthand: 'httpreq', func: exploreNodeRED.getHttpRequestMapping, defaultFile: 'http_requests.json' },
     { cli: 'Http Response Map (httpres)', shorthand: 'httpres', func: exploreNodeRED.getHttpResponseMapping, defaultFile: 'http_responses.json' },
@@ -68,7 +67,6 @@ const operations = [
 const joinAndStrip = input => input.join(' ').replace(/["']/g, '');
 
 const bashColors = [10, 12, 13, 14, 18];
-// const bashColors = [10, 208, 13, 14, 18];
 // Setup CLI
 const rl = readline.createInterface({
     input: process.stdin,

@@ -97,7 +97,7 @@ rl.on('line', (line) => {
                 if (flag === '-o') {
                     // write to file
                     const tmpPath = path.join(__dirname, '../', 'tmp');
-                    if (!fs.existsSync) fs.mkdirSync(tmpPath);
+                    if (!fs.existsSync(tmpPath)) fs.mkdirSync(tmpPath);
                     fs.writeFileSync(path.join(tmpPath, input || operation.defaultFile), JSON.stringify(result, null, 4));
                 }
             } else {

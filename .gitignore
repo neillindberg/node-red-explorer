@@ -3,5 +3,7 @@ dist/**
 \.vscode/**
 tmp/**
 scratch.js
+scratch.*
 keep/**
 in.json
+flows/**

@@ -56,7 +56,7 @@ const getJSONPathQuery = (nodeType, properties = []) => {
 const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
   const query = getJSONPathQuery(nodeType, properties);
   const queryResult = jsonpath.query(inJSON, query);
-  console.log('getNodeTypeProps: ', queryResult);
+  // console.log('getNodeTypeProps: ', queryResult);
 
   if ((properties.length > 0) && nodeType) console.log(queryResult.length / properties.length, ` ${nodeType} nodes found.`);
   const complete = [];
@@ -74,7 +74,7 @@ module.exports = {
 
     if (fs.existsSync(filePath)) {
       try {
-        console.log(`\nReading JSON from: ${filePath}\n`);
+        console.log(`\nReading JSON from: ${filePath}`);
         const nodeRedJSON = JSON.parse(fs.readFileSync(filePath));
         console.log((nodeRedJSON.flow && Array.isArray(nodeRedJSON.flow)) ? 'Input looks valid.' : 'Invalid input shape. Expect errors.');
         return nodeRedJSON;

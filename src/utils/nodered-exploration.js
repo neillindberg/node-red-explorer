@@ -70,7 +70,7 @@ const getNodeTypeProps = (inJSON, nodeType, properties = []) => {
 
 module.exports = {
   getJSONfromNodeRED: (fileName) => {
-    const filePath = path.join(__dirname, fileName);
+    const filePath = (/C:/.test(fileName)) ? fileName : path.join(__dirname, fileName);
 
     if (fs.existsSync(filePath)) {
       try {
@@ -232,11 +232,11 @@ module.exports = {
     const functionNodes = module.exports.getByNodeType(inJSON, 'function');
     const regex = (searchString) ? new RegExp(searchString.trim(), 'gi') : new RegExp();
     const nodeNames = functionNodes.filter(node => regex.test(node.func || undefined))
-    .map(x => {
-      const tab = tabs.find(tab => tab.id === x.z);
-      // const matches = (functionBodySearch) ? x.func.match(new RegExp(functionBodySearch.trim(), 'gi')) : null; 
-      return `\x1b[38;5;160m${x.name} (${(tab ? tab.label : '-subflow-')})\x1b[m\n${x.func}\n\n`;
-    });
+      .map(x => {
+        const tab = tabs.find(tab => tab.id === x.z);
+        // const matches = (functionBodySearch) ? x.func.match(new RegExp(functionBodySearch.trim(), 'gi')) : null; 
+        return `\x1b[38;5;160m${x.name} (${(tab ? tab.label : '-subflow-')})\x1b[m\n${x.func}\n\n`;
+      });
     console.log(nodeNames.length, ' matches found.');
     console.log(nodeNames.sort(subflowsLastSort).sort(tabNameSort).join(''));
   },

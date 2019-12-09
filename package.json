@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"No testing setup just yet, y'all.\"",
     "clean": "eslint . --fix && node ./src/index.js",
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "get-flows": "node ./src/get-flows.js"
   },
   "author": "Neil G. Lindberg",
   "license": "ISC",
@@ -20,7 +21,7 @@
     "flat": "^4.1.0",
     "jsonpath": "^1.0.2",
     "lodash": "^4.17.15",
-    "newman": "^4.5.4",
+    "newman": "^4.5.5",
     "os": "^0.1.1"
   },
   "dependencies": {

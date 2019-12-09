@@ -37,8 +37,8 @@ const operations = [
     { cli: 'Unique Attribute List (ual)', shorthand: 'ual', func: exploreNodeRED.getAttributeList },
     { cli: 'Id(s) (ids)', shorthand: 'ids', func: exploreNodeRED.getIdMap },
     { cli: 'Tab Map (tm)', shorthand: 'tm', func: exploreNodeRED.getByNodeType, defaultFile: 'tabs.json', nodeType: 'tab' },
-    { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json', nodeType: 'function' },
-    // { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getByNodeType, defaultFile: 'functions.json', nodeType: 'function' },
+    // { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getFunctionMapping, defaultFile: 'functions.json', nodeType: 'function' },
+    { cli: 'Function Map (fm)', shorthand: 'fm', func: exploreNodeRED.getByNodeType, defaultFile: 'functions.json', nodeType: 'function' },
     { cli: 'Http In Map (httpin)', shorthand: 'httpin', func: exploreNodeRED.getByNodeType, defaultFile: 'http_in_by_node_type.json', nodeType: 'http in' },
     { cli: 'Http Request Map (httpreq)', shorthand: 'httpreq', func: exploreNodeRED.getHttpRequestMapping, defaultFile: 'http_requests.json' },
     { cli: 'Http Response Map (httpres)', shorthand: 'httpres', func: exploreNodeRED.getHttpResponseMapping, defaultFile: 'http_responses.json' },
@@ -90,15 +90,18 @@ rl.on('line', (line) => {
         console.log(feedback);
         if (operation) {
             const flag = input.shift();
+            const flaggedInput = (flag) ? joinAndStrip(input) : null;
             const result = operation.func(sourceJSON, (operation.nodeType ? operation.nodeType :
                 (flag && flag === '-n') ? joinAndStrip(input) : null));
             if (input.length > 0 && flag !== '-n') {
                 // TODO: Refactor. When we started adding more flags this became spaghetti.
                 if (flag === '-o') {
                     // write to file
+                    console.log('Flag -o -- write to file.');
                     const tmpPath = path.join(__dirname, '../', 'tmp');
                     if (!fs.existsSync(tmpPath)) fs.mkdirSync(tmpPath);
-                    fs.writeFileSync(path.join(tmpPath, input || operation.defaultFile), JSON.stringify(result, null, 4));
+                    console.log('join these: ', tmpPath, flaggedInput, 'OR', operation.defaultFile);
+                    fs.writeFileSync(path.join(tmpPath, flaggedInput || operation.defaultFile), JSON.stringify(result, null, 4));
                 }
             } else {
                 // Just log to stdout.
@@ -107,7 +110,7 @@ rl.on('line', (line) => {
         }
     }
     setTimeout(() => {
-        console.log('\n---- operation completed ----\n');
+        console.log('---- operation completed ----\n');
         rl.prompt();
     }, 500);
 }).on('close', () => {

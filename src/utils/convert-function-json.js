@@ -12,7 +12,8 @@ const functionsPath = path.join(__dirname, '../../', 'tmp', 'functions');
 const writeFunctionToFile = (functionName, jsonData) => {
     console.log(`$[?(@.name == '${functionName}')]['func']`);
     const functionBody = jsonpath.query(jsonData, `$[?(@.name == '${functionName}')]['func']`);
-    if (functionBody) {
+    console.log(functionBody);
+    if (functionBody && functionBody.length > 0) {
         const functionFile = functionName.toLowerCase().replace(/\s+/g, '-') + '.js';
         fs.writeFile(path.join(functionsPath, functionFile), functionBody[0], err => {
             if (err) {

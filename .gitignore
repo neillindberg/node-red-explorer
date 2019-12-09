@@ -7,3 +7,4 @@ scratch.*
 keep/**
 in.json
 flows/**
+\.history/**

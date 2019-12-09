@@ -1,16 +1,25 @@
 const fs = require('fs');
 const exploreNodeRED = require('./utils/nodered-exploration');
 //
+const writeFlowFunctionFile = (flowFunctions, flowFunctionsFile) => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(flowFunctionsFile, JSON.stringify(flowFunctions, null, 4), err => {
+            if (err) reject(err);
+            console.log('File added: ', flowFunctionsFile);
+            resolve(flowFunctionsFile);
+        });
+    });
+};
+
 module.exports = {
     go: async (files) => {
         console.log('Build Flow Function Files', files);
         const unwantedTabsAndSubflows = ['Testbed', 'Test Email Receiver', 'Heat Map Data', 'DashDB', 'Reports'];
         console.log('Discarding these tabs and subflows: ', unwantedTabsAndSubflows.join());
-        files.forEach(flowFileName => {
+        return Promise.all(files.map(flowFileName => {
             const sourceJSON = exploreNodeRED.getJSONfromNodeRED(flowFileName);
             const zMap = {};
             const unwanteds = {};
-            const diffThese = [];
             // Populate zMap - tabs
             exploreNodeRED.getByNodeType(sourceJSON, 'tab').filter(tab => { // !unwantedTabsNames.includes(tab.label)
                 if (unwantedTabsAndSubflows.includes(tab.label)) {
@@ -45,11 +54,7 @@ module.exports = {
             console.log('Flow functions after filter: ', flowFunctions.length);
             // TODO: Check for uniqueness across Tab/Function names (because we want to use it as index)
             const flowFunctionsFile = flowFileName.split('/').pop().split('.')[0] + '_functions.json';
-            fs.writeFile(flowFunctionsFile, JSON.stringify(flowFunctions, null, 4), err => {
-                if (err) throw err;
-                console.log('File added: ', flowFunctionsFile);
-                diffThese.push(flowFunctionsFile);
-            });
-        });
+            return writeFlowFunctionFile(flowFunctions, flowFunctionsFile);
+        }));
     }
 };

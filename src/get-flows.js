@@ -4,6 +4,7 @@ const Cloudant = require('@cloudant/cloudant');
 const cloudant = Cloudant('https://a210bafe-ffb2-4869-825a-601db86f769d-bluemix:0f26fcae092694bedbbb3899b5df4140c9f34ab7086ff2b902f92e294b7f0a6d@a210bafe-ffb2-4869-825a-601db86f769d-bluemix.cloudant.com');
 const db = cloudant.db.use('nodered');
 const buildFlowFunctionFiles = require('./build-flow-function-files');
+const generateFlowDiff = require('./generate-flow-diff');
 
 // const flows = ['Stellaris-Flow-n/flow', 'Stellaris-Flow-x/flow'];
 const flowsDirectory = path.join(__dirname, '../flows');
@@ -30,6 +31,8 @@ const writeFlowFile = async (_id) => {
 };
 
 Promise.all(flows.map(writeFlowFile))
-    .then(flowFiles => {
-        buildFlowFunctionFiles.go(flowFiles);
+    .then(async flowFiles => {
+        const flowFunctionFiles = await buildFlowFunctionFiles.go(flowFiles);
+        // console.log('DIFF THESE: ', flowFunctionFiles);
+        generateFlowDiff.do(flowFunctionFiles);
     });

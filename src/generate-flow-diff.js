@@ -11,6 +11,7 @@ const normalizeStringForFS = (str) => {
     return str.toLowerCase()
         .replace(/\./g, '_')
         .replace(/:/g, '_')
+        .replace(/&/g, '_and_')
         .replace(/\//g, '_')
         .replace(/\?/g, '-question-mark')
         .replace(/\s{0,}-+\s{0,}/g, '_')

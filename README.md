@@ -27,7 +27,7 @@ File added:  C:\Users\lindben\Documents\workspace\node-red-explorer\flows\stella
 ```
 These files represent the app in entirety.
 
-Run ./build-flow-function-files to build out, into named-by-function(.js) files into respective ./flows/<flow_name> groups, by tab and submodule.
+Both way diffs are built-out into named-by-function(.js) files into respective ./flows/<flow_name> groups, by tab and submodule.
 
-Run ./generate-flow-diffs.js
+To explore diffs there are tools such as Meld (https://meldmerge.org/). Fire up Meld or the like and compare files. With the graphical diffing tool you can usually see all the differences highlighted in green/red/blue for different states.
 

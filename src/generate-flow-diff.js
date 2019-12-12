@@ -50,15 +50,31 @@ const doDiff = (funcs1, funcs2) => {
 // Write files per diff if no weird stuff happened to this point.
 // console.log(diffsCombined.map(diff => `[${diff.name}] in [${diff.location.name} (${diff.location.type})]`));
 //
+const rmRf = (folderPath) => {
+    if (fs.existsSync(folderPath)) {
+      fs.readdirSync(folderPath).forEach((file, index) => {
+        const curPath = path.join(folderPath, file);
+        if (fs.lstatSync(curPath).isDirectory()) { // recurse
+          rmRf(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(folderPath);
+    }
+  };
+
 let writeCount = 0;
 const writeFunctionFiles = (branchName, functions) => {
     const branchFunctionsPath = path.join(__dirname, '../', 'flows', branchName);
-    if (!fs.existsSync(branchFunctionsPath)) fs.mkdirSync(branchFunctionsPath);
+    if (fs.existsSync(branchFunctionsPath)) rmRf(branchFunctionsPath);
+    fs.mkdirSync(branchFunctionsPath);
     functions.forEach(entry => {
         const { location, name, func } = entry;
         const locationName = normalizeStringForFS(location.name) + ((location.type === 'subflow') ? '_subflow' : '');
         const locationPath = path.join(branchFunctionsPath, locationName);
-        if (!fs.existsSync(locationPath)) fs.mkdirSync(locationPath);
+        if (fs.existsSync(locationPath)) rmRf(locationPath);
+        fs.mkdirSync(locationPath);
         const functionFile = normalizeStringForFS(name) + '.js';
         const filePath = path.join(locationPath, functionFile);
         const formattedFunction = JSON.parse(JSON.stringify(func, null, 4));
@@ -70,7 +86,7 @@ const writeFunctionFiles = (branchName, functions) => {
 
 
 module.exports = {
-    do: (files) => {
+    do: (branches, files) => {
         const [fx1FileName, fx2FileName] = files;
         if (!fx1FileName || !fx2FileName) throw 'File names are not defined. Two flow JSON files are required.';
         //
@@ -89,8 +105,8 @@ module.exports = {
         console.log(getDuplicatesWithinSelf(diffsCombined).length, ' duplicates when combined diffs.');
         //
         // TODO: Not hardcoded, por favor
-        writeFunctionFiles('dev-r', diffs1);
-        writeFunctionFiles('dev-x', diffs2);
+        writeFunctionFiles('branch-' + branches[0], diffs1);
+        writeFunctionFiles('branch-' + branches[1], diffs2);
         console.log(`${diffsCombined.length / writeCount * 100}% of diff'd function files written. Happy diffing!`);
     }
 };

@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"No testing setup just yet, y'all.\"",
-    "clean": "eslint . --fix && node ./src/index.js",
+    "clean": "eslint . --fix",
     "start": "node ./src/index.js",
-    "get-flows": "node ./src/get-flows.js"
+    "get-flows": "node ./src/get-flows.js",
+    "list": "cat package.json | python -c \"import sys,json; print json.dumps(json.load(sys.stdin)['scripts'], indent=4)\""
   },
   "author": "Neil G. Lindberg",
   "license": "ISC",

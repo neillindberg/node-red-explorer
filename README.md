@@ -27,7 +27,7 @@ module.exports = {
 
 Then, choose from the options:
 ```
-Reading JSON from: C:\Users\lindben\Documents\workspace\node-red-explorer\in.json
+Reading JSON from: ...path-to/in.json
 Input looks valid.
 Please choose operation (for human readable: help): 
 [ catch | change | comm | debug | delay | email | fm | httpin | inject | json | linkin | linkout | sm | switch | tm | xml | fbn | fbr | fbsn | fp | ftf

@@ -3,6 +3,8 @@ CLI to make finding nodes by type and running grep against function bodies, merg
 
 To explore a NodeRED project the the export of a NodeRED flow JSON (which, exports in the form: { _id, _rev, flows[] })  should be copied to the file "in.json" (static route from project base directory).
 
+*NOTE:* This project came about to pull flows from Cloudant (IBM's CouchDB) and compare them to assist in merging development "branches" of a CloudFoundry NodeRED app.
+
 
 ## Making a Connection
 Add a file to the root directory of this project: `setup.js`

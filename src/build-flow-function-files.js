@@ -1,5 +1,6 @@
 const fs = require('fs');
 const exploreNodeRED = require('./utils/nodered-exploration');
+const { excludes } = require('../setup');
 //
 const writeFlowFunctionFile = (flowFunctions, flowFunctionsFile) => {
     return new Promise((resolve, reject) => {
@@ -14,7 +15,7 @@ const writeFlowFunctionFile = (flowFunctions, flowFunctionsFile) => {
 module.exports = {
     go: async (files) => {
         console.log('Build Flow Function Files', files);
-        const unwantedTabsAndSubflows = ['Testbed', 'Test Email Receiver', 'Heat Map Data', 'DashDB', 'Reports'];
+        const unwantedTabsAndSubflows = excludes || [];
         console.log('Discarding these tabs and subflows: ', unwantedTabsAndSubflows.join());
         return Promise.all(files.map(flowFileName => {
             const sourceJSON = exploreNodeRED.getJSONfromNodeRED(flowFileName);

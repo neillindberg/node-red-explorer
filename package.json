@@ -1,5 +1,5 @@
 {
-  "name": "red-to-nodejs-express",
+  "name": "node-red-explorer",
   "version": "0.0.1",
   "description": "Take the output JSON from NodeRED export and convert it to NodeJS (sans RED) using Express for routing.",
   "main": "index.js",
@@ -12,7 +12,7 @@
   },
   "author": "Neil G. Lindberg",
   "license": "ISC",
-  "private": true,
+  "private": false,
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",

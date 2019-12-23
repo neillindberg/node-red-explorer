@@ -13,10 +13,13 @@ Edit file to add your Cloudant connection string under property `connString`.
 
 If desired, add a file name formatter function under property `flowNameFormatter` (optional).
 
+Add a list of tabs and subflows to ignore in diffing operations under `excludes` (optional).
+
 ```
 module.exports = {
     connString: 'https://conn-string-with-credentials',
-    flowNameFormatter: (branchName) => `${branchName}/flow`
+    flowNameFormatter: (branchName) => `${branchName}/flow`,
+    excludes: ['My Testing Tab', 'Some Subflow']
 }
 ```
 

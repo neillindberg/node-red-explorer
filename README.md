@@ -50,7 +50,7 @@ Please choose operation (for human readable: help):
 
 ## Merging
 
-From project root run with the required two branch identifiers (used in building 'Stellaris-Flow-<branch_id>/flow'): 
+From project root run with the required two branch identifiers (used in building flow name if formatter is provided in setup): 
 
 `npm run get-flows -- r n`
 

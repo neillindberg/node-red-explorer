@@ -19,6 +19,8 @@ const mapAll = () => {
             console.log('op: ', operation.cli);
             const result = operation.func(sourceJSON, operation.nodeType);
             fs.writeFileSync(path.join(__dirname, '../', 'tmp', operation.defaultFile), JSON.stringify(result, null, 4));
+            // TODO: Change to write to system /tmp (instead of ^)
+            // fs.writeFileSync(path.join('/tmp/', operation.defaultFile), JSON.stringify(result, null, 4));
         }
     });
     return 'DONE';

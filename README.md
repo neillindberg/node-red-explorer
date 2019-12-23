@@ -3,6 +3,22 @@ CLI to make finding nodes by type and running grep against function bodies, merg
 
 To explore a NodeRED project the the export of a NodeRED flow JSON (which, exports in the form: { _id, _rev, flows[] })  should be copied to the file "in.json" (static route from project base directory).
 
+
+## Making a Connection
+Add a file to the root directory of this project: `setup.js`
+
+Edit file to add your Cloudant connection string under property `connString`.
+
+If desired, add a file name formatter function under property `flowNameFormatter` (optional).
+
+```
+module.exports = {
+    connString: 'https://conn-string-with-credentials',
+    flowNameFormatter: (branchName) => `${branchName}/flow`
+}
+```
+
+
 ## Running Explorer CLI
 
 `npm run start`
@@ -28,6 +44,7 @@ Please choose operation (for human readable: help):
 // Node type functions will return all of a type of node by Tab and/or Subflow:
 > catch, changes, email, xml, etc. // Additionally, add the -o flag and file name to output to file
 ```
+
 
 ## Merging
 

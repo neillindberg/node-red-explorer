@@ -8,3 +8,4 @@ keep/**
 in.json
 flows/**
 \.history/**
+setup.js

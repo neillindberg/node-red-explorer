@@ -6,17 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
-//
-const normalizeStringForFS = (str) => {
-    return str.toLowerCase()
-        .replace(/\./g, '_')
-        .replace(/:/g, '_')
-        .replace(/&/g, '_and_')
-        .replace(/\//g, '_')
-        .replace(/\?/g, '-question-mark')
-        .replace(/\s{0,}-+\s{0,}/g, '_')
-        .replace(/\s+/g, '_');
-};
+const {rmRf, normalizeStringForFS} = require('./utils/utils');
 // Ensure we go through every node on both functions lists
 // name + location.name + location.type = unique
 const getDuplicatesWithinSelf = (funcs) => {
@@ -30,16 +20,7 @@ const getDuplicatesWithinSelf = (funcs) => {
     });
     return duplicatesInSelf;
 };
-// TODO: Should we not cleanup these dups, or exclude them, or something?
-// const duplicatesInSelf = false; // TODO: Discuss clean up and/or ignore of self-duplicates using: getDuplicatesWithinSelf(functions1);
-// if (duplicatesInSelf) {
-//     console.log('Within the same flow there are %d duplicates found.', duplicatesInSelf.length);
-//     duplicatesInSelf.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name) ? 1 : 0);
-//     console.log(duplicatesInSelf.map(dup => `[${dup.name}] in [${dup.location.name} (${dup.location.type})]`));
-// }
-// Same name, same location (name/type), DIFFERENT func.
-// TODO: If different function write to branch-specific directory under ../flows/tmp/<specific_branch>/
-//         TODO: using existing ftf -n "Function Name"
+//
 const doDiff = (funcs1, funcs2) => {
     return funcs1.filter((func1) => {
         const match = funcs2.find(x => _.isEqual(x.name, func1.name) && _.isEqual(x.func, func1.func) && _.isEqual(x.location, func1.location));
@@ -50,20 +31,6 @@ const doDiff = (funcs1, funcs2) => {
 // Write files per diff if no weird stuff happened to this point.
 // console.log(diffsCombined.map(diff => `[${diff.name}] in [${diff.location.name} (${diff.location.type})]`));
 //
-const rmRf = (folderPath) => {
-    if (fs.existsSync(folderPath)) {
-      fs.readdirSync(folderPath).forEach((file, index) => {
-        const curPath = path.join(folderPath, file);
-        if (fs.lstatSync(curPath).isDirectory()) { // recurse
-          rmRf(curPath);
-        } else { // delete file
-          fs.unlinkSync(curPath);
-        }
-      });
-      fs.rmdirSync(folderPath);
-    }
-  };
-
 let writeCount = 0;
 const writeFunctionFiles = (branchName, functions) => {
     const branchFunctionsPath = path.join(__dirname, '../', 'flows', branchName);

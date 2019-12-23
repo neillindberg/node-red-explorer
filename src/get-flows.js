@@ -1,16 +1,20 @@
-const flowString = (branch) => `Stellaris-Flow-${branch}/flow`;
+const fs = require('fs');
+const path = require('path');
+const buildFlowFunctionFiles = require('./build-flow-function-files');
+const generateFlowDiff = require('./generate-flow-diff');
+//
+const setup = require('../setup');
+const Cloudant = require('@cloudant/cloudant');
+const cloudant = Cloudant(setup.connString);
+const db = cloudant.db.use('nodered');
+//
+const flowString = (branch) => (setup && setup.flowNameFormatter) ? setup.flowNameFormatter(branch) : branch;
 const branches = process.argv.slice(2);
 if (branches.length !== 2) process.exit();
 const flows = branches.map(flowString);
 console.log('Preparing for diff report with: ', flows.join(' & '));
 //
-const fs = require('fs');
-const path = require('path');
-const Cloudant = require('@cloudant/cloudant');
-const cloudant = Cloudant('https://a210bafe-ffb2-4869-825a-601db86f769d-bluemix:0f26fcae092694bedbbb3899b5df4140c9f34ab7086ff2b902f92e294b7f0a6d@a210bafe-ffb2-4869-825a-601db86f769d-bluemix.cloudant.com');
-const db = cloudant.db.use('nodered');
-const buildFlowFunctionFiles = require('./build-flow-function-files');
-const generateFlowDiff = require('./generate-flow-diff');
+
 //
 const flowsDirectory = path.join(__dirname, '../flows');
 if (!fs.existsSync(flowsDirectory)) fs.mkdirSync(flowsDirectory);
